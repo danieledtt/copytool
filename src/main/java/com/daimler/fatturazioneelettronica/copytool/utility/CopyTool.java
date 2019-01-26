@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Vector;
 
 @Component
 public class CopyTool  implements CommandLineRunner {
@@ -67,25 +68,40 @@ public class CopyTool  implements CommandLineRunner {
                 logger.info("Open SFTP Connection");
                 sftpChannel.connect();
 
-                logger.info("Transfer Files...");
-                sftpChannel.get(fromPath, copyToolConfig.getLocalPath(), new SftpProgressMonitor() {
-                    @Override
-                    public void init(int i, String s, String s1, long l) {
-                        logger.info("Transfer: ["+i+"], from ["+s+"], to ["+s1+"], length ["+l+"]byte");
-                    }
+                sftpChannel.cd(fromPath);
+                Vector<ChannelSftp.LsEntry> lista = sftpChannel.ls(fromPath);
 
-                    @Override
-                    public boolean count(long l) {
-                        logger.info("Transfered: ["+l+"] byte");
-                        return false;
-                    }
+                String fileSrc = null;
+                String fileDest = null;
+                for(ChannelSftp.LsEntry entry : lista){
+                    logger.info("Process File -> "+entry.getFilename());
+                    if(entry.getAttrs().isDir()) continue;
 
-                    @Override
-                    public void end() {
-                        logger.info("Transfer Ended");
-                    }
-                }, ChannelSftp.OVERWRITE);
-                logger.info("Transfer Complete");
+                    fileSrc=fromPath + entry.getFilename();
+
+                    fileDest=copyToolConfig.getLocalPath()+entry.getFilename().replaceAll("\\.","."+System.currentTimeMillis()+".");
+
+                    logger.info("Transfer Files...");
+                    sftpChannel.get(fileSrc, fileDest, new SftpProgressMonitor() {
+                        @Override
+                        public void init(int i, String s, String s1, long l) {
+                            logger.info("Transfer: ["+i+"], from ["+s+"], to ["+s1+"], length ["+l+"]byte");
+                        }
+
+                        @Override
+                        public boolean count(long l) {
+                            logger.info("Transfered: ["+l+"] byte");
+                            return false;
+                        }
+
+                        @Override
+                        public void end() {
+                            logger.info("Transfer Ended");
+                        }
+                    }, ChannelSftp.OVERWRITE);
+                    logger.info("Transfer Complete");
+
+                }
 
 
             } catch (Throwable t) {
