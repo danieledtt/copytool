@@ -6,6 +6,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpProgressMonitor;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -130,20 +128,30 @@ public class CopyTool  implements CommandLineRunner {
                 while ((line = bufferedReader.readLine()) != null) {
                     logger.info("Line read=[" + line + "]");
 
-                    String fileInput = copyToolConfig.getPathFrom() + copyToolConfig.getPrefixFrom() + line + copyToolConfig.getSuffixFrom();
-                    String fileOutput = copyToolConfig.getPathTo() + copyToolConfig.getPrefixTo() + line + copyToolConfig.getSuffixTo();
+                   // String fileInput = copyToolConfig.getPathFrom() + copyToolConfig.getPrefixFrom() + line + copyToolConfig.getSuffixFrom();
+                    String fileOutput =null;// copyToolConfig.getPathTo() + copyToolConfig.getPrefixTo() + line + copyToolConfig.getSuffixTo();
 
-                    if ("xml".equals(copyToolConfig.getActiveProfile())) {
+                   /* if ("xml".equals(copyToolConfig.getActiveProfile())) {
                         fileInput = line;
                         fileOutput = copyToolConfig.getPathTo() + copyToolConfig.getPrefixTo() + new File(fileInput).getName() + copyToolConfig.getSuffixTo();
-                    }
+                    }*/
 
                     try {
-                        logger.info("Start copy [" + fileInput + "] to [" + fileOutput + "]");
-                        Files.move(new File(fileInput).toPath(), new File(fileOutput).toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        logger.info("Done");
+
+                        File dir = new File(copyToolConfig.getPathFrom());
+                        logger.info("Filter FILE -> "+ copyToolConfig.getPrefixFrom() + line + copyToolConfig.getSuffixFrom());
+                        FileFilter fileFilter = new RegexFileFilter( copyToolConfig.getPrefixFrom() + line + copyToolConfig.getSuffixFrom());
+                        File[] files = dir.listFiles(fileFilter);
+
+                        for (File src: files) {
+                            fileOutput = copyToolConfig.getPathTo() + copyToolConfig.getPrefixTo() + src.getName() +copyToolConfig.getSuffixTo();
+                            logger.info("Start copy [" + src.toPath() + "] to [" + fileOutput + "]");
+                            Files.move(src.toPath(), new File(fileOutput).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            logger.info("Done");
+
+                        }
                     } catch (Exception e) {
-                        logger.error("Errore su copia -> " + e.getMessage());
+                        logger.error("Errore su copia -> ",e);
                     }
 
                 }
