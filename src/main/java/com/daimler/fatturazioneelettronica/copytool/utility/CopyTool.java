@@ -76,7 +76,7 @@ public class CopyTool  implements CommandLineRunner {
                 for(ChannelSftp.LsEntry entry : lista){
                     logger.info("Process File -> "+entry.getFilename());
                     if(entry.getAttrs().isDir()) continue;
-                    if(!entry.getFilename().endsWith(copyToolConfig.getExtensionFileAcctepted()))continue;
+                    if(!entry.getFilename().toLowerCase().endsWith(copyToolConfig.getExtensionFileAcctepted().toLowerCase()))continue;
 
                     fileSrc=fromPath + entry.getFilename();
 
