@@ -69,6 +69,16 @@ public class CopyTool  implements CommandLineRunner {
                 sftpChannel.connect();
 
                 sftpChannel.cd(fromPath);
+
+                try{
+                    logger.info("Creating dir downloaded");
+                    sftpChannel.mkdir("downloaded");
+                    logger.info("Downloaded created.");
+
+                }catch (Throwable t){
+                    logger.error("Directory already exists");
+                }
+
                 Vector<ChannelSftp.LsEntry> lista = sftpChannel.ls(fromPath);
 
                 String fileSrc = null;
@@ -101,6 +111,10 @@ public class CopyTool  implements CommandLineRunner {
                         }
                     }, ChannelSftp.OVERWRITE);
                     logger.info("Transfer Complete");
+
+                    logger.info("Remote Move file");
+                    sftpChannel.rename(entry.getFilename(),"./downloaded/"+entry.getFilename());
+                    logger.info("Operation completed");
 
                 }
 
