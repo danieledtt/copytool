@@ -76,6 +76,7 @@ public class CopyTool  implements CommandLineRunner {
                 for(ChannelSftp.LsEntry entry : lista){
                     logger.info("Process File -> "+entry.getFilename());
                     if(entry.getAttrs().isDir()) continue;
+                    if(!entry.getFilename().endsWith(copyToolConfig.getExtensionFileAcctepted()))continue;
 
                     fileSrc=fromPath + entry.getFilename();
 
@@ -91,7 +92,7 @@ public class CopyTool  implements CommandLineRunner {
                         @Override
                         public boolean count(long l) {
                             logger.info("Transfered: ["+l+"] byte");
-                            return false;
+                            return true;
                         }
 
                         @Override

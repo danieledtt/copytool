@@ -47,6 +47,17 @@ public class CopyToolConfig {
     @Value("${com.daimler.fatturazioneelettronica.copytool.sftpDate}")
     String sftpDate;
 
+    public String getExtensionFileAcctepted() {
+        return extensionFileAcctepted;
+    }
+
+    public void setExtensionFileAcctepted(String extensionFileAcctepted) {
+        this.extensionFileAcctepted = extensionFileAcctepted;
+    }
+
+    @Value("${com.daimler.fatturazioneelettronica.copytool.extensionFileAcctepted}")
+    String extensionFileAcctepted;
+
     public String getSftpDate() {
         return sftpDate;
     }
